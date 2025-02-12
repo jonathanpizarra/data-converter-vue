@@ -1,0 +1,35 @@
+:root{
+    font-size: 16px;
+    --white: #FEFFFF;
+    --light: #DEF2F1;
+    --mid: #3AAFA9;
+    --dark: #2B7A78;
+    --black: hsl(196, 29%, 13%);
+   
+}
+
+*{
+    font-family: 'Atkinson Hyperlegible Mono', sans-serif;
+}
+
+body, html{
+    background-color: var(--mid);
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.line{
+    padding-top:1px;
+    width: 50%;
+    border-top:1px solid var(--dark);
+    align-self: center;
+    background-color: var(--mid);
+    margin:2rem 0;
+}
+
+.step-container{
+    display: flex;
+    flex-direction: column;
+    margin: auto 1rem;
+}
