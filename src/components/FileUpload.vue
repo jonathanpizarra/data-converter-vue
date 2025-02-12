@@ -107,7 +107,7 @@ export default defineComponent({
         const suffix = ref('s')
         const filename = ref('No file selected.')
         const conversionType = ref('PROPER')
-        const isLoading = ref(true)
+        const isLoading = ref(false)
         const isError = ref(false)
         
         const {sourceFormat, targetFormat, clearParentInputs} = toRefs(props)
