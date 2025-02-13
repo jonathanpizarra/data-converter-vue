@@ -1,7 +1,7 @@
 <template>
     <div class="converter">
         <LandingComp />
-        <StatComp />
+        <StatComp ref="statComp"/>
 
         <div class="upload-container">
             <RocketIcon/>
@@ -29,7 +29,7 @@
                 <div class="line"></div>
             </div>
 
-            <FileUpload :sourceFormat="chosenFormat" :targetFormat="targetFormat" ref="fileUploadRef" :clearParentInputs="clearParentInputs"/>
+            <FileUpload @updateStats="updateStatsParent" :sourceFormat="chosenFormat" :targetFormat="targetFormat" ref="fileUploadRef" :clearParentInputs="clearParentInputs"/>
 
         </div>
 
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted, onUpdated, ref, useTemplateRef } from 'vue';
 import FileUpload from './FileUpload.vue';
 import LandingComp from './LandingComp.vue';
 import StatComp from './StatComp.vue';
@@ -50,7 +50,7 @@ interface Formats<T = string[]> {
     [key: string] : T
 }
 
-type FileUploadInstance = InstanceType<typeof FileUpload>;
+// type FileUploadInstance = InstanceType<typeof FileUpload>;
 
 export default defineComponent({
     name : 'HomePage',
@@ -76,12 +76,10 @@ export default defineComponent({
         const targetFormat = ref('xml')
         const suffix = ref('s')
         const conversionType = ref('')
-        const fileUploadRef = ref<FileUploadInstance | null>(null)
+        const fileUploadRef = useTemplateRef<typeof FileUpload>('fileUploadRef')
+        const statComp = useTemplateRef<typeof StatComp>('statComp')
 
         const selectFormat = (format: string): void => {
-            console.log(format)
-            console.log(formatTargets[format])
-            console.log(targetFormat)
 
             let el = document.querySelector(`.format-${format}`)
             if(el){
@@ -89,9 +87,8 @@ export default defineComponent({
                 el.classList.add('selected-source')
                 chosenFormat.value = format
                 targetFormat.value = ""
-                if(fileUploadRef.value){
-                    fileUploadRef.value.clearInputs()
-                }
+                fileUploadRef?.value?.clearInputs?.()
+
             }
             
         }
@@ -100,11 +97,23 @@ export default defineComponent({
             return `format format-${format}`
         }
 
-        const clearParentInputs = (): void =>{
+        const clearParentInputs = (): void => {
             targetFormat.value = ''
         }
 
+        const updateStatsParent = (): void => {
+            // call child method
+            statComp.value?.setStats?.()
+        }
+
+        // Debug: Check the ref on updated (useful if there are reactive dependencies)
+        onUpdated(() => {
+            console.log('onUpdated - Child component ref:', statComp.value);
+        });
+
         onMounted(()=>{
+
+            console.log('onMounted - Child component ref:', statComp.value);
             let el = document.querySelector(`.format-${chosenFormat.value}`)
             if(el){
                 document.querySelector('selected-source')?.classList.remove('selected-source')
@@ -123,6 +132,7 @@ export default defineComponent({
             generateClass,
             fileUploadRef,
             clearParentInputs,
+            updateStatsParent,
         }
     }
     
@@ -218,6 +228,10 @@ option{
 
     .chosen-format{
         margin: 0 0.5rem;
+    }
+
+    .upload-container{
+        margin-top: 6rem;
     }
 }
 

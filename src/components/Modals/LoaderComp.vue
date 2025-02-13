@@ -10,7 +10,7 @@
 </template>
 <script lang="ts">
 import { defineComponent} from 'vue';
-import RocketIcon from './RocketIcon.vue';
+import RocketIcon from '../RocketIcon.vue';
 
 export default defineComponent({
     name: 'LoaderComp',

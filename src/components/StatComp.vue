@@ -8,19 +8,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import StatItem from './StatItem.vue';
+import axios from 'axios';
 
 export default defineComponent({
     name: 'StatComp',
     components: {
         StatItem,
     },
-    setup(){
-        let fileCountValue: number = 42
+    setup(_, {expose}){
+        const fileCountValue = ref(0)
         let fileCountUnit: string = 'files converted'
-        let sizeCountValue: number = 123
+        const sizeCountValue = ref(0)
         let sizeCountUnit: string = 'bytes processed'
+
+        const setStats = async () =>{
+            console.log('setting stats...')
+            const resp = await axios.get( process.env.VUE_APP_API_URL + 'stats' )
+
+            if(resp.status == 200){
+                console.log('resp.data', resp.data)
+                fileCountValue.value = resp.data.fileCount
+                sizeCountValue.value = resp.data.byteCount
+            }
+        }
+
+        onMounted(setStats)
+
+        expose({setStats})
 
         return{
             fileCountValue,

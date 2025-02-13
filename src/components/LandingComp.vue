@@ -9,10 +9,11 @@
             <p>A <span class="strike">useless</span>, <span class="strike">not-so-</span>rocket-fast converter of common data formats. Convert your json file to xml or yaml and more... </p> 
             <p>Tech stack used: 
                 <a href="https://vuejs.org/" class="tech-link" target="_blank">Vue3</a>, 
-                <a href="https://docs.spring.io/spring-boot/index.html" class="tech-link" target="_blank">Spring Boot</a>, 
+                <a href="https://docs.spring.io/spring-boot/index.html" class="tech-link" target="_blank">Spring Boot</a>,
+                <a href="https://www.postgresql.org/" class="tech-link" target="_blank">PostgreSQL</a>, 
                 <a href="https://redis.io/
                 " class="tech-link" target="_blank">Redis</a>. Deployed on 
-                <a class="tech-link" target="_blank" href="https://render.com">Render</a>
+                <a class="tech-link" target="_blank" href="https://render.com">Render</a>.
             </p>
         </div>
 

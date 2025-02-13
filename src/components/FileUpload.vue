@@ -76,6 +76,7 @@
         </div>
     </form>
     <LoaderComp :is-visible="isLoading"/>
+    <ErrorModal v-if="isError" :closeErrorModal="closeErrorModal">{{ errMsg }}</ErrorModal>
 
 </template>
 
@@ -83,13 +84,15 @@
 import { defineComponent, ref, toRefs} from 'vue';
 import axios from 'axios';
 import StepNumber from './StepNumber.vue';
-import LoaderComp from './LoaderComp.vue';
+import LoaderComp from './Modals/LoaderComp.vue';
+import ErrorModal from './Modals/ErrorModal.vue';
 
 export default defineComponent({
     name: "FileUpload",
     components: {
         StepNumber,
         LoaderComp,
+        ErrorModal,
     },
     props: {
         sourceFormat: {
@@ -102,29 +105,49 @@ export default defineComponent({
             type: Function,
         }
     },
-    setup(props){
+    emits:['updateStats'],
+    setup(props, {emit}){
         const file = ref()
         const suffix = ref('s')
         const filename = ref('No file selected.')
         const conversionType = ref('PROPER')
         const isLoading = ref(false)
         const isError = ref(false)
+        const errMsg = ref('')
         
         const {sourceFormat, targetFormat, clearParentInputs} = toRefs(props)
+        const mimeTypes = {
+            json: 'application/json',
+            xml: 'text/xml',
+            csv: 'text/csv',
+            xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        } as { [key: string] : string }
 
         const uploadFile = async () =>{
-            if(!file.value || !targetFormat.value || targetFormat.value == '') return
+            if(!file.value || !targetFormat.value || targetFormat.value == ''){
+                errMsg.value = 'Please fill out all fields'
+                isError.value = true
+                return
+            }
 
             let formData = new FormData()
             formData.append(sourceFormat.value + 'File', file.value)
 
             if(sourceFormat.value == 'json' && targetFormat.value == 'xml'){
-                if(!suffix.value) return
+                if(!suffix.value){
+                     errMsg.value = 'Please fill out all fields'
+                     isError.value = true
+                     return
+                }
                 formData.append('suffix', suffix.value)
             }
 
             if(sourceFormat.value == 'xlsx' && targetFormat.value == 'xml'){
-                if(!conversionType.value) return
+                if(!conversionType.value){
+                    errMsg.value = 'Please fill out all fields'
+                    isError.value = true
+                    return
+                }
                 formData.append('conversionType', conversionType.value)
             }
             isLoading.value = true
@@ -149,40 +172,52 @@ export default defineComponent({
                     document.body.appendChild(link)
                     link.click()
                     isLoading.value = false
-                    console.log(`Success converting ${sourceFormat} to ${targetFormat}`)
+                    clearInputs()
+                    emit('updateStats')
                 }else{
                     isLoading.value = false
-                    console.log('Error uploading your file. Please try again')
+                    errMsg.value = 'Error uploading your file. Please try again'
+                    isError.value = true
                 }
             }catch(err){
                 isLoading.value = false
-                console.log(err)
+                errMsg.value = 'Error converting your file. Please try again'
+                isError.value = true
             }
 
         }
 
         const onFileChange = (e: Event)=>{
             const inputFile = e.target as HTMLInputElement
-            console.log("file....")
-            console.log(e)
-            console.log(e.target)
-            console.log(inputFile.files)
-            
-            if(inputFile.files && inputFile.files[0]){
-                console.log('mime ', inputFile.files[0].type)
+            console.log('event: ', e)
+            console.log('inputFile', e.target)
+            if(inputFile.files && inputFile.files[0] && sourceFormat.value){
+                console.log('file : ', inputFile.files[0])
+                console.log('source: ', sourceFormat.value)
+                console.log('target', targetFormat.value)
+                if(inputFile.files[0].type != mimeTypes[sourceFormat.value]){
+                    errMsg.value = 'Invalid file for selected source format.'
+                    isError.value = true
+                    return
+                }
+                
                 file.value = inputFile.files[0]
                 filename.value = inputFile.files[0].name
             }
                 
         }
 
-        const clearInputs = () => {
+        const clearInputs = (): void => {
             file.value = undefined
             filename.value = 'No file selected.'
             suffix.value = 's'
             conversionType.value = 'PROPER'
-            if(clearParentInputs.value) clearParentInputs.value()
-            console.log('inputs cleared...')
+            clearParentInputs.value?.()
+        }
+
+        const closeErrorModal = (): void =>{
+            isError.value = false
+            errMsg.value = ''
         }
 
 
@@ -193,6 +228,8 @@ export default defineComponent({
             conversionType,
             isLoading,
             isError,
+            errMsg,
+            closeErrorModal,
             uploadFile,
             clearInputs,
             onFileChange,
@@ -205,8 +242,6 @@ export default defineComponent({
 
 <style scoped>
 form{
-    /* border-top: 1px solid var(--light); */
-    /* border-bottom: 1px solid var(--light); */
     margin: 0;
     padding: 0;
 
@@ -293,7 +328,6 @@ button:hover{
 }
 
 .option{
-    /* border: 1px solid var(--dark); */
     margin:1rem;
 }
 

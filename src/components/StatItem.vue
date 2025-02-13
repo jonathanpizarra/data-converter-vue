@@ -25,22 +25,6 @@ export default defineComponent({
         }
     },
     setup(){
-        // const {value, unit} = toRefs(props)
-
-        const addClass = (e: Event) => {
-            console.log('trying...')
-            if(e){
-                
-                console.log('adding class', e)
-            }
-        }
-
-
-        return {
-            // value,
-            // unit,
-            addClass,
-        }
 
     }
 })
