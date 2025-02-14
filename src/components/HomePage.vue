@@ -10,7 +10,7 @@
 
                 <div class="format-container">
                     <div class="format-container-item" v-for="(format,index) in formats" :key="format">
-                        <p v-if="index > 0">|</p>
+                        <p v-if="index > 0 && isNotMobile">|</p>
                         <p :class="generateClass(format)" @click="selectFormat(format)">.{{ format }}</p>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUpdated, ref, useTemplateRef } from 'vue';
+import { computed, defineComponent, onMounted, onUpdated, ref, useTemplateRef } from 'vue';
 import FileUpload from './FileUpload.vue';
 import LandingComp from './LandingComp.vue';
 import StatComp from './StatComp.vue';
@@ -76,6 +76,7 @@ export default defineComponent({
         const targetFormat = ref('xml')
         const suffix = ref('s')
         const conversionType = ref('')
+        const windowWidth = ref(window.innerWidth)
         const fileUploadRef = useTemplateRef<typeof FileUpload>('fileUploadRef')
         const statComp = useTemplateRef<typeof StatComp>('statComp')
 
@@ -106,13 +107,15 @@ export default defineComponent({
             statComp.value?.setStats?.()
         }
 
+        const isNotMobile = computed(() => windowWidth.value > 768)
+
         // Debug: Check the ref on updated (useful if there are reactive dependencies)
         onUpdated(() => {
             console.log('onUpdated - Child component ref:', statComp.value);
         });
 
         onMounted(()=>{
-
+            window.addEventListener('resize', ()=> windowWidth.value = window.innerWidth)
             console.log('onMounted - Child component ref:', statComp.value);
             let el = document.querySelector(`.format-${chosenFormat.value}`)
             if(el){
@@ -133,6 +136,7 @@ export default defineComponent({
             fileUploadRef,
             clearParentInputs,
             updateStatsParent,
+            isNotMobile,
         }
     }
     
@@ -144,6 +148,10 @@ export default defineComponent({
 .converter{
     height: 100vh;
     min-height: 100vh;
+}
+
+.format-container{
+    margin: 0 1rem;
 }
 
 .format-container, .format-container-item{
@@ -234,5 +242,7 @@ option{
         margin-top: 6rem;
     }
 }
+
+
 
 </style>
